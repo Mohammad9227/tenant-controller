@@ -1,0 +1,57 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: tenants.platform.example.com
+spec:
+  group: platform.example.com
+  scope: Cluster
+  names:
+    kind: Tenant
+    listKind: TenantList
+    plural: tenants
+    singular: tenant
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Owner
+          type: string
+          jsonPath: .spec.owner
+        - name: Namespace
+          type: string
+          jsonPath: .status.namespace
+        - name: Phase
+          type: string
+          jsonPath: .status.phase
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                owner:
+                  type: string
+                  description: Team that owns the tenant. Copied to a namespace label.
+                quota:
+                  type: object
+                  description: Hard resource quota for the tenant namespace (ResourceQuota.spec.hard).
+                  additionalProperties:
+                    anyOf:
+                      - type: integer
+                      - type: string
+                    x-kubernetes-int-or-string: true
+                    pattern: '^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$'
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                namespace:
+                  type: string

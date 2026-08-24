@@ -1,0 +1,10 @@
+apiVersion: platform.example.com/v1alpha1
+kind: Tenant
+metadata:
+  name: acme
+spec:
+  owner: team-a
+  quota:
+    cpu: "4"
+    memory: 8Gi
+    pods: "20"

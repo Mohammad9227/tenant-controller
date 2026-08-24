@@ -1,0 +1,16 @@
+# ClusterRole for running the controller in cluster. Not needed for `go run`
+# from a laptop, where the kubeconfig user's permissions apply.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tenant-controller
+rules:
+  - apiGroups: ["platform.example.com"]
+    resources: ["tenants"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["platform.example.com"]
+    resources: ["tenants/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: [""]
+    resources: ["namespaces", "resourcequotas"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]

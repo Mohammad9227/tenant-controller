@@ -1,0 +1,9 @@
+apiVersion: platform.example.com/v1alpha1
+kind: Tenant
+metadata:
+  name: payments
+spec:
+  owner: team-payments
+  quota:
+    cpu: "8"
+    memory: 16Gi
