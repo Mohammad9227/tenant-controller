@@ -1,0 +1,63 @@
+# In-cluster runtime for the operator: ServiceAccount, ClusterRoleBinding to the
+# ClusterRole in config/rbac.yaml, and the controller Deployment.
+# IMAGE_PLACEHOLDER is replaced by hack/build-installer.sh at release time.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tenant-controller
+  namespace: tenant-controller-system
+  labels:
+    app.kubernetes.io/name: tenant-controller
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tenant-controller
+  labels:
+    app.kubernetes.io/name: tenant-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: tenant-controller
+subjects:
+  - kind: ServiceAccount
+    name: tenant-controller
+    namespace: tenant-controller-system
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tenant-controller
+  namespace: tenant-controller-system
+  labels:
+    app.kubernetes.io/name: tenant-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: tenant-controller
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: tenant-controller
+    spec:
+      serviceAccountName: tenant-controller
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: manager
+          image: IMAGE_PLACEHOLDER
+          args:
+            - -zap-devel=false
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+      terminationGracePeriodSeconds: 10

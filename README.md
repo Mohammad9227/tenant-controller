@@ -25,6 +25,33 @@ NAME   OWNER    NAMESPACE     PHASE   AGE
 acme   team-a   tenant-acme   Ready   3s
 ```
 
+## Install into a cluster
+
+Every release publishes a multi-arch image to
+`ghcr.io/mohammad9227/tenant-controller` and attaches a single manifest bundle
+(CRD, RBAC, Deployment) to the GitHub Release. Install the latest release with:
+
+```
+kubectl apply -f https://github.com/Mohammad9227/tenant-controller/releases/latest/download/install.yaml
+```
+
+Or pin a version:
+
+```
+kubectl apply -f https://github.com/Mohammad9227/tenant-controller/releases/download/v0.1.0/install.yaml
+```
+
+The operator runs as a single replica Deployment in the
+`tenant-controller-system` namespace. Try it out:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/Mohammad9227/tenant-controller/main/config/samples/tenant.yaml
+kubectl get tenant acme
+```
+
+Uninstall with `kubectl delete -f` on the same URL. Deleting the CRD deletes
+all Tenants, which garbage collects their namespaces, so uninstall carefully.
+
 ## What the reconcile loop does
 
 Each pass is idempotent and runs whenever a Tenant changes, or a namespace or
@@ -56,7 +83,10 @@ controllers/          TenantReconciler and fake client unit tests
 cmd/main.go           manager wiring and signal handling
 config/crd/           CRD with OpenAPI schema, status subresource, printer columns
 config/rbac.yaml      ClusterRole for running in cluster
+config/deploy/        namespace, ServiceAccount, ClusterRoleBinding, Deployment
 config/samples/       example Tenant
+hack/                 build-installer.sh, bundles dist/install.yaml for releases
+.github/workflows/    release workflow: image to ghcr.io plus install.yaml on tag
 ```
 
 Written against controller-runtime directly rather than the kubebuilder scaffold so
@@ -96,5 +126,5 @@ NotFound Tenant.
 
 ## Not included on purpose
 
-Finalizers, admission webhooks, metrics, leader election, a container image, and a Helm
-chart. Each is a reasonable next step; none is needed to understand the reconcile loop.
+Finalizers, admission webhooks, metrics, leader election, and a Helm chart. Each is a
+reasonable next step; none is needed to understand the reconcile loop.
